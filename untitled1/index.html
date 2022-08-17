@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    #table {
+      font-family: Arial, Helvetica, sans-serif;
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    #table td, #table th {
+      border: 1px solid #ddd;
+      padding: 8px;
+    }
+
+    #table tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    #table tr:hover {
+      background-color: #ddd;
+    }
+
+    #table th {
+      padding-top: 12px;
+      padding-bottom: 12px;
+      text-align: left;
+      background-color: #202ed2;
+      color: white;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Product Table</h1>
+
+<table id="table">
+  <tr>
+    <th>Name</th>
+    <th>Price</th>
+    <th>Quantity</th>
+    <th>Action</th>
+  </tr>
+</table>
+
+<form onsubmit="save()" method="POST">
+  <input type="text" placeholder="name" id="name" name="name">
+  <input type="text" placeholder="quantity" id="quantity" name="quantity">
+  <input type="text" placeholder="price" id="price" name="price">
+  <button>Save</button>
+</form>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script>
+
+  $(document).ready(function () {
+    getProduct()
+  })
+
+  function getProduct() {
+    $.get("http://localhost:8080/product/v1/all", function (res) {
+      console.log(res)
+      var html_li = "<tr>\n" +
+        "    <th>Name</th>\n" +
+        "    <th>Price</th>\n" +
+        "    <th>Quantity</th>\n" +
+        "    <th>Action</th>\n" +
+        "  </tr>"
+      for (var j = 0; j < res.data.length; j++) {
+        html_li += `
+  <tr>
+    <td>${res.data[j].name}</td>
+    <td>${res.data[j].price}</td>
+    <td>${res.data[j].quantity}</td>
+    <td><button onclick="sell(${res.data[j].id})">sell</button></td>
+  </tr>`
+        $("#table").html(html_li);
+      }
+    })
+  }
+
+  function sell(id)
+  {
+    var api_delete = "http://localhost:8080/product/v1/sell/" + id;
+    $.get(api_delete);
+    alert("Sell finish")
+    getProduct()
+  }
+
+  function save() {
+
+    var data = {
+      "name": $('#name').val(),
+      "price": $('#price').val(),
+      "quantity": $('#quantity').val()
+    }
+    console.log(data)
+    $.ajax({
+      url: "http://localhost:8080/product/v1/create",
+      data: JSON.stringify(data),
+      type: "post",
+      headers: {
+        // "content-type": "text/plain;charset=UTF-8" // Add this line
+        "content-type": "application/json;charset=UTF-8" // Or add this line
+      },
+      beforeSend: function () {
+        console.log("Waiting...");
+      },
+      error: function () {
+        console.log("Error");
+      },
+      success: function (data) {
+        console.log(data);
+      }
+    });
+    location.reload();
+  }
+
+</script>
+</body>
+</html>
